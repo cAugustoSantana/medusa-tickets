@@ -18,7 +18,7 @@ const CartTemplate = ({
   customer: HttpTypes.StoreCustomer | null
 }) => {
   const [serviceFee, setServiceFee] = useState<number>(0)
-  const [isLoadingServiceFee, setIsLoadingServiceFee] = useState(false)
+  const [isLoadingServiceFee, setIsLoadingServiceFee] = useState(true) // Start with true to show loading
 
   useEffect(() => {
     const addServiceFee = async () => {
@@ -31,7 +31,6 @@ const CartTemplate = ({
       }
       
       try {
-        setIsLoadingServiceFee(true)
         console.log('Calculating service fee for cart:', cart.id)
         const cartWithFee = await calculateServiceFeeForCart(cart.id)
         console.log('Service fee calculated:', cartWithFee)
@@ -53,14 +52,17 @@ const CartTemplate = ({
   // Create cart object with service fee for totals display
   const cartForTotals = cart ? {
     ...cart,
-    service_fee: serviceFee
+    service_fee: serviceFee,
+    is_loading_service_fee: isLoadingServiceFee
   } : null
 
   console.log('Cart Template Debug:', {
     originalCart: cart,
     serviceFee,
     cartForTotals,
-    isLoadingServiceFee
+    isLoadingServiceFee,
+    'isLoadingServiceFee type': typeof isLoadingServiceFee,
+    'isLoadingServiceFee value': isLoadingServiceFee
   })
 
   return (

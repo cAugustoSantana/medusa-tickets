@@ -12,7 +12,7 @@ import Divider from "@modules/common/components/divider"
 
 const CheckoutSummary = ({ cart }: { cart: any }) => {
   const [serviceFee, setServiceFee] = useState<number>(0)
-  const [isLoadingServiceFee, setIsLoadingServiceFee] = useState(false)
+  const [isLoadingServiceFee, setIsLoadingServiceFee] = useState(true) // Start with true to show loading
 
   useEffect(() => {
     const addServiceFee = async () => {
@@ -25,7 +25,6 @@ const CheckoutSummary = ({ cart }: { cart: any }) => {
       }
       
       try {
-        setIsLoadingServiceFee(true)
         console.log('Checkout: Calculating service fee for cart:', cart.id)
         const cartWithFee = await calculateServiceFeeForCart(cart.id)
         console.log('Checkout: Service fee calculated:', cartWithFee)
@@ -47,7 +46,8 @@ const CheckoutSummary = ({ cart }: { cart: any }) => {
   // Create cart object with service fee for totals display
   const cartForTotals = cart ? {
     ...cart,
-    service_fee: serviceFee
+    service_fee: serviceFee,
+    is_loading_service_fee: isLoadingServiceFee
   } : null
 
   console.log('Checkout Summary Debug:', {

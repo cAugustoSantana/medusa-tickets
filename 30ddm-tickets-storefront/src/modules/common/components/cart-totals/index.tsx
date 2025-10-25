@@ -18,6 +18,8 @@ type CartTotalsProps = {
         is_service_fee?: boolean
       }
     }>
+    service_fee?: number
+    is_loading_service_fee?: boolean
   }
 }
 
@@ -31,18 +33,20 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
     discount_subtotal,
   } = totals
 
-  // Get service fee from cart object (calculated by backend)
-  const serviceFee = (totals as any).service_fee || 0
+  // Get service fee and loading state from cart object
+  const serviceFee = totals.service_fee || 0
+  const isLoadingServiceFee = totals.is_loading_service_fee || false
   
   // Debug logging
   console.log('CartTotals Debug:', {
     serviceFee,
+    isLoadingServiceFee,
     total,
     item_subtotal,
     currency_code,
     totals: totals,
-    hasServiceFeeProperty: 'service_fee' in totals,
-    serviceFeeFromTotals: (totals as any).service_fee
+    'isLoadingServiceFee type': typeof isLoadingServiceFee,
+    'isLoadingServiceFee value': isLoadingServiceFee
   })
   
   // Calculate total including service fee
@@ -63,14 +67,18 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
             {convertToLocale({ amount: shipping_subtotal ?? 0, currency_code })}
           </span>
         </div>
-        {serviceFee > 0 && (
-          <div className="flex items-center justify-between">
-            <span>Service Fee (10%)</span>
-            <span data-testid="cart-service-fee" data-value={serviceFee}>
-              {convertToLocale({ amount: serviceFee, currency_code })}
-            </span>
-          </div>
-        )}
+        <div className="flex items-center justify-between">
+          <span>Service Fee (10%)</span>
+          <span data-testid="cart-service-fee" data-value={serviceFee}>
+            {isLoadingServiceFee ? (
+              <span className="text-gray-500">
+                <span className="inline-block animate-pulse">⏳</span> Calculating...
+              </span>
+            ) : (
+              convertToLocale({ amount: serviceFee, currency_code })
+            )}
+          </span>
+        </div>
         {!!discount_subtotal && (
           <div className="flex items-center justify-between">
             <span>Discount</span>

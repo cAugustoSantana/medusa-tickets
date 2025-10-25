@@ -1,5 +1,5 @@
-import { 
-  createWorkflow, 
+import {
+  createWorkflow,
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk"
 import { useQueryGraphStep } from "@medusajs/medusa/core-flows"
@@ -38,7 +38,7 @@ export const sendOrderConfirmationWorkflow = createWorkflow(
         id,
       },
     })
-    
+
     const notification = sendNotificationStep([{
       to: orders[0].email,
       channel: "email",
