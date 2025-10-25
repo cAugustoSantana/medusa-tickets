@@ -145,6 +145,19 @@ import {
               </Container>
             )}
   
+            {/* Download Tickets Button */}
+            <Container className="px-6">
+              <Section className="mt-8 text-center">
+                <a
+                  href={`${process.env.STORE_URL || 'http://localhost:8000'}/order/${order.id}/confirmed`}
+                  className="inline-block bg-black text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+                  style={{ textDecoration: 'none' }}
+                >
+                  Download Tickets
+                </a>
+              </Section>
+            </Container>
+
             {/* Order Items */}
             <Container className="px-6">
               <Heading className="text-xl font-semibold text-gray-800 mb-4">
@@ -213,9 +226,6 @@ import {
                             <Text className="text-xs text-gray-400 mt-1">
                               Scan to verify ticket online
                             </Text>
-                            <Text className="text-xs text-gray-400 mt-1">
-                              Ticket ID: {item.itemId}
-                            </Text>
                           </div>
                         </Column>
                         <Column className="w-2/3 pl-4">
@@ -249,29 +259,6 @@ import {
                   <Text className="text-sm text-gray-500">
                     Total items with QR codes: {String(totalItems || 0)}
                   </Text>
-                  
-                  {/* Validation URLs */}
-                  <Section className="mt-4 p-4 bg-gray-50 rounded-lg">
-                    <Heading className="text-lg font-semibold text-gray-800 mb-2">
-                      Ticket Validation URLs
-                    </Heading>
-                    <Text className="text-sm text-gray-600 mb-2">
-                      You can also validate your tickets by visiting these URLs directly:
-                    </Text>
-                    {items.map((item, index) => (
-                      <div key={item.itemId} className="mb-2">
-                        <Text className="text-xs text-gray-500">
-                          Ticket {index + 1} ({item.productTitle}):
-                        </Text>
-                        <Link 
-                          href={getTicketValidationUrl(item.itemId)}
-                          className="text-xs text-blue-600 underline break-all"
-                        >
-                          {getTicketValidationUrl(item.itemId)}
-                        </Link>
-                      </div>
-                    ))}
-                  </Section>
                 </Section>
               )}
   

@@ -2,6 +2,7 @@ import { Heading, Text } from "@medusajs/ui"
 import { HttpTypes } from "@medusajs/types"
 import { getOrderQRCodes } from "@lib/data/qr-codes"
 import PrintButton from "./print-button"
+import IndividualPDFDownloadButton from "./individual-pdf-download-button"
 
 type QRCodeData = {
   itemId: string
@@ -97,18 +98,16 @@ const OrderQRCodes = async ({ order }: OrderQRCodesProps) => {
                 </Text>
                 {qr.itemInfo.variantTitle && (
                   <Text className="text-ui-fg-muted text-sm">
-                    <strong>Variant:</strong> {qr.itemInfo.variantTitle}
+                    <strong>Ticket Type:</strong> {qr.itemInfo.variantTitle}
                   </Text>
                 )}
-                <Text className="text-ui-fg-muted text-sm">
-                  <strong>Quantity:</strong> {qr.itemInfo.quantity}
-                </Text>
-                <Text className="text-ui-fg-muted text-sm">
-                  <strong>Total:</strong> €{(qr.itemInfo.total / 100).toFixed(2)}
-                </Text>
-                <Text className="text-xs text-ui-fg-muted mt-2">
-                  Order: {order.id} | Item: {qr.itemId}
-                </Text>
+                <div className="mt-3">
+                  <IndividualPDFDownloadButton 
+                    order={order} 
+                    qrCode={qr} 
+                    ticketNumber={index + 1} 
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -116,12 +115,15 @@ const OrderQRCodes = async ({ order }: OrderQRCodesProps) => {
       </div>
       
       <div className="mt-4 p-4 bg-ui-bg-subtle border border-ui-border-base rounded-lg">
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex flex-col gap-4">
           <Text className="text-sm text-ui-fg-muted">
-            <strong>Instructions:</strong> Save these QR codes or print them out. 
+            <strong>Instructions:</strong> Save these QR codes, download individual PDFs, or print all tickets as a single PDF. 
             You can use them for returns, exchanges, or order verification at our store.
           </Text>
-          <PrintButton />
+          
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <PrintButton order={order} qrCodesData={qrCodesData} />
+          </div>
         </div>
       </div>
     </div>

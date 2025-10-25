@@ -25,17 +25,25 @@ completeCartWorkflow.hooks.validate(
     const seatDateCombinations = new Set<string>()
     
     for (const item of items) {
-      if (item.quantity !== 1) {
+      const productVariant = productVariants.find(
+        (variant) => variant.id === item.variant_id
+      )
+
+      // Check if this is a general access ticket
+      const isGeneralAccess = item.metadata?.ticket_type === "general_access"
+      
+      // For seat-based tickets, quantity must be 1
+      if (!isGeneralAccess && item.quantity !== 1) {
         throw new MedusaError(
           MedusaError.Types.INVALID_DATA, 
           "You can only purchase one ticket for a seat."
         )
       }
-      const productVariant = productVariants.find(
-        (variant) => variant.id === item.variant_id
-      )
 
-      if (!productVariant || !item.metadata?.seat_number) {continue}
+      // Skip seat validation for general access tickets
+      if (isGeneralAccess || !item.metadata?.seat_number) {
+        continue
+      }
 
       if (!item.metadata?.show_date) {
         throw new MedusaError(

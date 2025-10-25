@@ -1,5 +1,3 @@
-"use client"
-
 import { XMark } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -7,6 +5,7 @@ import Help from "@modules/order/components/help"
 import Items from "@modules/order/components/items"
 import OrderDetails from "@modules/order/components/order-details"
 import OrderSummary from "@modules/order/components/order-summary"
+import OrderQRCodes from "@modules/order/components/qr-codes"
 import ShippingDetails from "@modules/order/components/shipping-details"
 import React from "react"
 import BillingDetails from "@modules/order/components/billing-details"
@@ -15,7 +14,7 @@ type OrderDetailsTemplateProps = {
   order: HttpTypes.StoreOrder
 }
 
-const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
+const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = async ({
   order,
 }) => {
   return (
@@ -36,6 +35,7 @@ const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
       >
         <OrderDetails order={order} showStatus />
         <Items order={order} />
+        <OrderQRCodes order={order} />
         <BillingDetails order={order} />
         <OrderSummary order={order} />
         <Help />
