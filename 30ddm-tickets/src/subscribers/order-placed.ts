@@ -12,8 +12,8 @@ export default async function handleOrderPlaced({
   const { data: [order] } = await query.graph({
     entity: "order",
     fields: [
-      "id", 
-      "email", 
+      "id",
+      "email",
       "created_at",
       "currency_code",
       "total",
@@ -49,9 +49,33 @@ export default async function handleOrderPlaced({
   const extractPrice = (price: any): number => {
     if (typeof price === "number") return price
     if (typeof price === "string") return parseFloat(price) || 0
-    if (price?.value) return parseFloat(price.value) || 0
-    if (price?.amount) return parseFloat(price.amount) || 0
-    if (price?.calculated_amount) return parseFloat(price.calculated_amount) || 0
+
+    // Handle BigNumber objects
+    if (price && typeof price === "object") {
+      // Check if it has a valueOf method (BigNumber objects)
+      if (typeof price.valueOf === 'function') {
+        return price.valueOf()
+      }
+
+      // Check for raw value properties
+      if (price?.value !== undefined) {
+        return parseFloat(price.value) || 0
+      }
+
+      if (price?.amount !== undefined) {
+        return parseFloat(price.amount) || 0
+      }
+
+      if (price?.calculated_amount !== undefined) {
+        return parseFloat(price.calculated_amount) || 0
+      }
+
+      // Check for numeric_ property (BigNumber internal property)
+      if (price?.numeric_ !== undefined) {
+        return price.numeric_
+      }
+    }
+
     return 0
   }
 
@@ -80,25 +104,25 @@ export default async function handleOrderPlaced({
       },
       items: order.ticket_purchases?.map((purchase, index) => {
         // Find the corresponding order item for pricing
-        let orderItem = order.items?.find(item => 
+        let orderItem = order.items?.find(item =>
           item && item.metadata?.seat_number === purchase?.seat_number &&
           item.metadata?.row_number === purchase?.venue_row?.row_number
         )
-        
+
         // For general access tickets, try to match by ticket_type metadata
         if (!orderItem && purchase?.seat_number === "GA") {
-          orderItem = order.items?.find(item => 
+          orderItem = order.items?.find(item =>
             item && item.metadata?.ticket_type === "general_access"
           )
         }
-        
+
         // If no specific order item found, use the first item as fallback
         const fallbackItem = order.items?.[0]
         const itemToUse = orderItem || fallbackItem
-        
+
         const unitPrice = extractPrice(itemToUse?.unit_price) || 0
         const total = extractPrice(itemToUse?.total) || 0
-        
+
         // Debug logging
         console.log('Ticket item pricing debug:', {
           itemId: purchase?.id,
@@ -108,7 +132,7 @@ export default async function handleOrderPlaced({
           extractedTotal: total,
           itemToUse: itemToUse
         })
-        
+
         return {
           itemId: purchase?.id || `item_${index}`,
           qrCode: qrCodes[purchase?.id || ""] || "",
@@ -127,9 +151,9 @@ export default async function handleOrderPlaced({
       }) || [],
       totalItems: order.ticket_purchases?.length || 0,
       customer: {
-        first_name: order.customer?.first_name || 
+        first_name: order.customer?.first_name ||
           order.billing_address?.first_name,
-        last_name: order.customer?.last_name || 
+        last_name: order.customer?.last_name ||
           order.billing_address?.last_name,
       },
       billing_address: order.billing_address,

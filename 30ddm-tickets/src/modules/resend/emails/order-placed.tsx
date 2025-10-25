@@ -52,7 +52,12 @@ import {
       currency: order.currency_code,
     })
   
-    const formatPrice = (price: BigNumberValue | number) => {
+    const formatPrice = (price: BigNumberValue | number | string | null | undefined) => {
+      // Handle null/undefined
+      if (price === null || price === undefined) {
+        return formatter.format(0)
+      }
+  
       // Handle plain numbers
       if (typeof price === "number") {
         return formatter.format(price)
@@ -60,24 +65,37 @@ import {
   
       // Handle strings
       if (typeof price === "string") {
-        return formatter.format(parseFloat(price))
+        const parsed = parseFloat(price)
+        return isNaN(parsed) ? formatter.format(0) : formatter.format(parsed)
       }
   
-      // Handle BigNumberValue objects
-      if (price?.value) {
-        return formatter.format(parseFloat(price.value))
-      }
-      
-      if (price?.amount) {
-        return formatter.format(parseFloat(price.amount))
-      }
-      
-      if (price?.calculated_amount) {
-        return formatter.format(parseFloat(price.calculated_amount))
+      // Handle BigNumberValue objects (fallback for any remaining cases)
+      if (price && typeof price === "object") {
+        // Check if it's a BigNumber object with valueOf method
+        if (typeof (price as any).valueOf === 'function') {
+          const numericValue = (price as any).valueOf()
+          return formatter.format(numericValue)
+        }
+        
+        // Check for raw value properties (for BigNumberRawValue)
+        if ((price as any)?.value !== undefined) {
+          const parsed = parseFloat((price as any).value)
+          return isNaN(parsed) ? formatter.format(0) : formatter.format(parsed)
+        }
+        
+        if ((price as any)?.amount !== undefined) {
+          const parsed = parseFloat((price as any).amount)
+          return isNaN(parsed) ? formatter.format(0) : formatter.format(parsed)
+        }
+        
+        if ((price as any)?.calculated_amount !== undefined) {
+          const parsed = parseFloat((price as any).calculated_amount)
+          return isNaN(parsed) ? formatter.format(0) : formatter.format(parsed)
+        }
       }
   
       // Fallback for any other case
-      return price?.toString() || "0"
+      return formatter.format(0)
     }
   
     return (
