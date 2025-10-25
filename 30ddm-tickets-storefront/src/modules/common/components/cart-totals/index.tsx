@@ -12,6 +12,12 @@ type CartTotalsProps = {
     item_subtotal?: number | null
     shipping_subtotal?: number | null
     discount_subtotal?: number | null
+    items?: Array<{
+      unit_price: number
+      metadata?: {
+        is_service_fee?: boolean
+      }
+    }>
   }
 }
 
@@ -24,6 +30,23 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
     shipping_subtotal,
     discount_subtotal,
   } = totals
+
+  // Get service fee from cart object (calculated by backend)
+  const serviceFee = (totals as any).service_fee || 0
+  
+  // Debug logging
+  console.log('CartTotals Debug:', {
+    serviceFee,
+    total,
+    item_subtotal,
+    currency_code,
+    totals: totals,
+    hasServiceFeeProperty: 'service_fee' in totals,
+    serviceFeeFromTotals: (totals as any).service_fee
+  })
+  
+  // Calculate total including service fee
+  const finalTotal = (total || 0) + serviceFee
 
   return (
     <div>
@@ -40,6 +63,14 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
             {convertToLocale({ amount: shipping_subtotal ?? 0, currency_code })}
           </span>
         </div>
+        {serviceFee > 0 && (
+          <div className="flex items-center justify-between">
+            <span>Service Fee (10%)</span>
+            <span data-testid="cart-service-fee" data-value={serviceFee}>
+              {convertToLocale({ amount: serviceFee, currency_code })}
+            </span>
+          </div>
+        )}
         {!!discount_subtotal && (
           <div className="flex items-center justify-between">
             <span>Discount</span>
@@ -69,9 +100,9 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
         <span
           className="txt-xlarge-plus"
           data-testid="cart-total"
-          data-value={total || 0}
+          data-value={finalTotal}
         >
-          {convertToLocale({ amount: total ?? 0, currency_code })}
+          {convertToLocale({ amount: finalTotal, currency_code })}
         </span>
       </div>
       <div className="h-px w-full border-b border-gray-200 mt-4" />

@@ -457,3 +457,46 @@ export async function listCartOptions() {
     cache: "force-cache",
   })
 }
+
+/**
+ * Calculates and returns service fee for the cart
+ * @param cartId - The ID of the cart to calculate service fee for
+ * @returns The cart with service fee information
+ */
+export async function calculateServiceFeeForCart(cartId: string) {
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  try {
+    const response = await sdk.client.fetch<{
+      success: boolean
+      cart: any
+      service_fee: number
+      message?: string
+    }>(`/store/carts/${cartId}/add-service-fee`, {
+      method: "POST",
+      headers,
+    })
+
+    if (response.success) {
+      // Revalidate cart cache
+      const cartCacheTag = await getCacheTag("carts")
+      revalidateTag(cartCacheTag)
+
+      // Add service fee information to cart object
+      const cartWithServiceFee = {
+        ...response.cart,
+        service_fee: response.service_fee,
+        service_fee_percentage: 10
+      }
+
+      return cartWithServiceFee
+    } else {
+      throw new Error("Failed to calculate service fee")
+    }
+  } catch (error) {
+    console.error('Error calculating service fee for cart:', error)
+    throw error
+  }
+}
