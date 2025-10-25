@@ -40,6 +40,54 @@ export interface VenuesResponse {
   limit: number
   offset: number
 }
+export interface TicketPurchase {
+  id: string
+  order_id: string
+  seat_number: string
+  show_date: string
+  status: "pending" | "scanned"
+  created_at: string
+  updated_at: string
+  product_name: string
+  venue_name: string
+  row_type: string
+  buyer_name: string
+  buyer_email: string
+  is_validated: boolean
+  order_total: number
+  order_currency: string
+}
+
+export interface TicketsResponse {
+  tickets: TicketPurchase[]
+  count: number
+  limit: number
+  offset: number
+}
+
+export interface ShowStats {
+  show: {
+    id: string
+    name: string
+    venue: string
+    ticket_type: string
+    max_quantity?: number
+    dates: string[]
+  }
+  statistics: {
+    totalRevenue: number
+    totalTicketsSold: number
+    totalCapacity: number
+    percentageSold: number
+    currency: string
+    salesByDate: Array<{
+      date: string
+      ticketsSold: number
+      revenue: number
+    }>
+  }
+}
+
 export interface TicketProduct {
   id: string
   product_id: string

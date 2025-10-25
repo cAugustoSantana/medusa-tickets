@@ -12,93 +12,14 @@ import {
   toast,
 } from "@medusajs/ui"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import React, { useState, useMemo } from "react"
 import { sdk } from "../../lib/sdk"
 import { TicketProduct } from "../../types"
 import { CreateTicketProductModal } from "../../components/create-ticket-product-modal"
 
-const columnHelper = createDataTableColumnHelper<TicketProduct>()
-
-const columns = [
-  columnHelper.accessor("product.title", {
-    header: "Name",
-  }),
-  columnHelper.accessor("venue.name", {
-    header: "Venue",
-  }),
-  columnHelper.accessor("dates", {
-    header: "Dates",
-    cell: ({ row }) => {
-      const dates = row.original.dates || []
-      // Show first and last dates
-      const displayDates = [dates[0], dates[dates.length - 1]]
-      return (
-        <div className="flex flex-wrap gap-1 items-center">
-          {displayDates.map((date, index) => (
-            <React.Fragment key={date}>
-              <Badge color="grey" size="small">
-                {new Date(date).toLocaleDateString()}
-              </Badge>
-              {index < displayDates.length - 1 && (
-                <span className="text-gray-500 txt-small">
-                  -
-                </span>
-              )}
-            </React.Fragment>
-          ))}
-        </div>
-      )
-    },
-  }),
-  columnHelper.accessor("ticket_type", {
-    header: "Type",
-    cell: ({ row }) => {
-      const type = row.original.ticket_type
-      return (
-        <Badge color={type === "general_access" ? "blue" : "grey"} size="small">
-          {type === "general_access" ? "General Access" : "Seat Based"}
-        </Badge>
-      )
-    },
-  }),
-  columnHelper.accessor("max_quantity", {
-    header: "Max Quantity",
-    cell: ({ row }) => {
-      const product = row.original
-      if (product.ticket_type !== "general_access") {
-        return <span className="text-gray-400">-</span>
-      }
-      
-      return (
-        <div className="flex items-center gap-2">
-          <span className="txt-small-plus">
-            {product.max_quantity || "Not set"}
-          </span>
-          <Button
-            size="small"
-            variant="secondary"
-            onClick={() => handleUpdateQuantity(product)}
-          >
-            Edit
-          </Button>
-        </div>
-      )
-    },
-  }),
-  columnHelper.accessor("product_id", {
-    header: "Product",
-    cell: ({ row }) => {
-      return (
-        <Link to={`/products/${row.original.product_id}`}>
-          View Product Details
-        </Link>
-      )
-    },
-  }),
-]
-
 const TicketProductsPage = () => {
+    const navigate = useNavigate()
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isQuantityModalOpen, setIsQuantityModalOpen] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState<TicketProduct | null>(null)
@@ -110,6 +31,105 @@ const TicketProductsPage = () => {
     })
   
     const queryClient = useQueryClient()
+
+    const columnHelper = createDataTableColumnHelper<TicketProduct>()
+
+    const columns = [
+      columnHelper.accessor("product.title", {
+        header: "Name",
+        cell: ({ row }) => (
+          <div 
+            className="cursor-pointer hover:text-blue-600"
+            onClick={() => navigate(`/shows/${row.original.id}`)}
+          >
+            {row.original.product?.title || "Unknown Product"}
+          </div>
+        ),
+      }),
+      columnHelper.accessor("venue.name", {
+        header: "Venue",
+      }),
+      columnHelper.accessor("dates", {
+        header: "Dates",
+        cell: ({ row }) => {
+          const dates = row.original.dates || []
+          // Show first and last dates
+          const displayDates = [dates[0], dates[dates.length - 1]]
+          return (
+            <div className="flex flex-wrap gap-1 items-center">
+              {displayDates.map((date, index) => (
+                <React.Fragment key={date}>
+                  <Badge color="grey" size="small">
+                    {new Date(date).toLocaleDateString()}
+                  </Badge>
+                  {index < displayDates.length - 1 && (
+                    <span className="text-gray-500 txt-small">
+                      -
+                    </span>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          )
+        },
+      }),
+      columnHelper.accessor("ticket_type", {
+        header: "Type",
+        cell: ({ row }) => {
+          const type = row.original.ticket_type
+          return (
+            <Badge color={type === "general_access" ? "blue" : "grey"} size="small">
+              {type === "general_access" ? "General Access" : "Seat Based"}
+            </Badge>
+          )
+        },
+      }),
+      columnHelper.accessor("max_quantity", {
+        header: "Max Quantity",
+        cell: ({ row }) => {
+          const product = row.original
+          if (product.ticket_type !== "general_access") {
+            return <span className="text-gray-400">-</span>
+          }
+          
+          return (
+            <div className="flex items-center gap-2">
+              <span className="txt-small-plus">
+                {product.max_quantity || "Not set"}
+              </span>
+              <Button
+                size="small"
+                variant="secondary"
+                onClick={() => handleUpdateQuantity(product)}
+              >
+                Edit
+              </Button>
+            </div>
+          )
+        },
+      }),
+      columnHelper.accessor("product_id", {
+        header: "Actions",
+        cell: ({ row }) => {
+          return (
+            <div className="flex gap-2">
+              <Link to={`/products/${row.original.product_id}`}>
+                View Product Details
+              </Link>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  navigate(`/shows/${row.original.id}`)
+                }}
+                className="text-blue-600 hover:text-blue-800 underline"
+              >
+                View Dashboard
+              </button>
+            </div>
+          )
+        },
+      }),
+    ]
   
     const offset = useMemo(() => {
       return pagination.pageIndex * limit
@@ -131,17 +151,17 @@ const TicketProductsPage = () => {
       }),
     })
   
-    const table = useDataTable({
-      columns,
-      data: data?.ticket_products || [],
-      rowCount: data?.count || 0,
-      isLoading,
-      pagination: {
-        state: pagination,
-        onPaginationChange: setPagination,
-      },
-      getRowId: (row) => row.id,
-    })
+  const table = useDataTable({
+    columns,
+    data: data?.ticket_products || [],
+    rowCount: data?.count || 0,
+    isLoading,
+    pagination: {
+      state: pagination,
+      onPaginationChange: setPagination,
+    },
+    getRowId: (row) => row.id,
+  })
     
     const handleCloseModal = () => {
         setIsModalOpen(false)

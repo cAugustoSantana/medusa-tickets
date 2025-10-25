@@ -105,6 +105,21 @@ export const completeCartWithTicketsWorkflow = createWorkflow(
       },
     }).config({ name: "refetch-order" })
 
+    // Debug order data
+    console.log('Order after completion:', {
+      id: refetchedOrder[0]?.id,
+      total: refetchedOrder[0]?.total,
+      subtotal: refetchedOrder[0]?.subtotal,
+      currency_code: refetchedOrder[0]?.currency_code,
+      items: Array.isArray(refetchedOrder[0]?.items) ? refetchedOrder[0]?.items?.map(item => ({
+        id: item.id,
+        title: item.title,
+        unit_price: item.unit_price,
+        total: item.total,
+        quantity: item.quantity
+      })) : refetchedOrder[0]?.items
+    })
+
     return new WorkflowResponse({
       order: refetchedOrder[0],
     })

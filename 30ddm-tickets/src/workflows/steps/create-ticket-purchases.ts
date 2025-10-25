@@ -108,14 +108,17 @@ export const createTicketPurchasesStep = createStep(
           ticketBookingModuleService
         )
 
-        ticketPurchasesToCreate.push({
-          order_id,
-          ticket_product_id: item.variant.ticket_product_variant.ticket_product_id,
-          ticket_variant_id: item.variant.ticket_product_variant.id,
-          venue_row_id: generalAccessRowId,
-          seat_number: "GA", // General Access
-          show_date: new Date(showDate),
-        })
+        // Create multiple ticket purchases for the quantity
+        for (let i = 0; i < item.quantity; i++) {
+          ticketPurchasesToCreate.push({
+            order_id,
+            ticket_product_id: item.variant.ticket_product_variant.ticket_product_id,
+            ticket_variant_id: item.variant.ticket_product_variant.id,
+            venue_row_id: generalAccessRowId,
+            seat_number: `GA-${Date.now()}-${i}`, // Unique seat number for each GA ticket
+            show_date: new Date(showDate),
+          })
+        }
       } else {
         // For seat-based tickets, require seat selection metadata
         if (!item?.metadata?.venue_row_id || !item?.metadata?.seat_number) { continue }
@@ -130,6 +133,7 @@ export const createTicketPurchasesStep = createStep(
           continue
         }
 
+        // For seat-based tickets, create one ticket purchase (quantity should be 1)
         ticketPurchasesToCreate.push({
           order_id,
           ticket_product_id: item.variant.ticket_product_variant.ticket_product_id,

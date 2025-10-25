@@ -51,6 +51,47 @@ export default defineMiddlewares({
       methods: ["GET"],
       middlewares: [validateAndTransformQuery(GetTicketProductSeatsSchema, {})],
     },
+    {
+      matcher: "/admin/tickets",
+      methods: ["GET"],
+      middlewares: [
+        validateAndTransformQuery(createFindParams(), {
+          isList: true,
+          defaults: [
+            "id",
+            "order_id", 
+            "seat_number",
+            "show_date",
+            "status",
+            "created_at",
+            "updated_at",
+          ],
+        }),
+      ],
+    },
+    {
+      matcher: "/admin/shows/:id/stats",
+      methods: ["GET"],
+      middlewares: [],
+    },
+    {
+      matcher: "/admin/shows/:id/tickets",
+      methods: ["GET"],
+      middlewares: [
+        validateAndTransformQuery(createFindParams(), {
+          isList: true,
+          defaults: [
+            "id",
+            "order_id", 
+            "seat_number",
+            "show_date",
+            "status",
+            "created_at",
+            "updated_at",
+          ],
+        }),
+      ],
+    },
   ],
 })
 
