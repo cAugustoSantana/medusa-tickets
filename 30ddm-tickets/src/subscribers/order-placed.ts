@@ -80,10 +80,17 @@ export default async function handleOrderPlaced({
       },
       items: order.ticket_purchases?.map((purchase, index) => {
         // Find the corresponding order item for pricing
-        const orderItem = order.items?.find(item => 
+        let orderItem = order.items?.find(item => 
           item && item.metadata?.seat_number === purchase?.seat_number &&
           item.metadata?.row_number === purchase?.venue_row?.row_number
         )
+        
+        // For general access tickets, try to match by ticket_type metadata
+        if (!orderItem && purchase?.seat_number === "GA") {
+          orderItem = order.items?.find(item => 
+            item && item.metadata?.ticket_type === "general_access"
+          )
+        }
         
         // If no specific order item found, use the first item as fallback
         const fallbackItem = order.items?.[0]
@@ -106,7 +113,7 @@ export default async function handleOrderPlaced({
           itemId: purchase?.id || `item_${index}`,
           qrCode: qrCodes[purchase?.id || ""] || "",
           productTitle: firstTicketPurchase?.ticket_product?.product?.title || "Event Ticket",
-          variantTitle: purchase?.venue_row?.row_type || "General",
+          variantTitle: purchase?.venue_row?.row_type === "general_access" ? "General Access" : (purchase?.venue_row?.row_type || "General"),
           quantity: 1,
           unitPrice: unitPrice,
           total: total,

@@ -38,19 +38,44 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 
   // Calculate availability for each date and row type
   const availability = ticketProduct.dates.map((date: string) => {
-    // Group rows by row_type to get total seats per row type
-    const rowTypeGroups = ticketProduct.venue.rows.reduce((groups: any, row: any) => {
-      if (!groups[row.row_type]) {
-        groups[row.row_type] = {
-          row_type: row.row_type,
-          total_seats: 0,
+    // Check if this is a general access ticket
+    const isGeneralAccess = ticketProduct.variants.some((v: any) => {
+      const variantRowType = v.product_variant.options.find((opt: any) => 
+        opt.option?.title === "Row Type"
+      )?.value
+      return variantRowType === "general_access"
+    })
+
+    let rowTypeGroups = {}
+
+    if (isGeneralAccess) {
+      // For general access tickets, create a virtual row type group
+      // Use the manual max_quantity if set, otherwise fall back to venue capacity
+      const totalCapacity = ticketProduct.max_quantity || 
+        ticketProduct.venue.rows.reduce((sum: number, row: any) => sum + row.seat_count, 0) || 
+        100
+      rowTypeGroups = {
+        general_access: {
+          row_type: "general_access",
+          total_seats: totalCapacity,
           rows: [],
         }
       }
-      groups[row.row_type].total_seats += row.seat_count
-      groups[row.row_type].rows.push(row)
-      return groups
-    }, {})
+    } else {
+      // For seat-based tickets, group rows by row_type
+      rowTypeGroups = ticketProduct.venue.rows.reduce((groups: any, row: any) => {
+        if (!groups[row.row_type]) {
+          groups[row.row_type] = {
+            row_type: row.row_type,
+            total_seats: 0,
+            rows: [],
+          }
+        }
+        groups[row.row_type].total_seats += row.seat_count
+        groups[row.row_type].rows.push(row)
+        return groups
+      }, {})
+    }
 
     const dateAvailability = {
       date,

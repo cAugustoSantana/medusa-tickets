@@ -33,6 +33,7 @@ export const CreateTicketProductModal = ({
 
   // Step 2 data - prices[rowType][currency_region] = amount
   const [prices, setPrices] = useState<Record<string, Record<string, number>>>({})
+  const [maxQuantity, setMaxQuantity] = useState<number>(0)
 
   // Fetch venues
 const { data: venuesData } = useQuery<{
@@ -124,44 +125,96 @@ const { data: venuesData } = useQuery<{
       toast.error("Venue not found")
       return
     }
+
+    // For general access tickets, check if at least one price is set
+    if (ticketType === "general_access") {
+      const hasAnyPrice = currencyRegionCombinations.some((combo) => {
+        const key = combo.region_id ? `${combo.currency}_${combo.region_id}` : `${combo.currency}_store`
+        const amount = prices["general_access"]?.[key] || 0
+        return amount > 0
+      })
+      
+      if (!hasAnyPrice) {
+        toast.error("Please set at least one price for general access tickets")
+        return
+      }
+    }
   
     // Prepare variants data
-    // combine rows with the same row_type
-    const combinedRows: Record<RowType, { seat_count: number }> = {
-      premium: { seat_count: 0 },
-      balcony: { seat_count: 0 },
-      standard: { seat_count: 0 },
-      vip: { seat_count: 0 },
-    }
-    selectedVenue.rows.forEach((row) => {
-      if (!combinedRows[row.row_type]) {
-        combinedRows[row.row_type] = { seat_count: 0 }
-      }
-      combinedRows[row.row_type].seat_count += row.seat_count
-    })
-    const variants = Object.keys(combinedRows).map((rowType) => ({
-      row_type: rowType as RowType,
-      seat_count: combinedRows[rowType as RowType].seat_count,
-      prices: currencyRegionCombinations.map((combo) => {
-        const key = combo.region_id ? `${combo.currency}_${combo.region_id}` : `${combo.currency}_store`
-        const amount = prices[rowType as RowType]?.[key] || 0
-        
-        const price: any = {
-          currency_code: combo.currency,
-          amount: amount,
-        }
-        
-        // Only add rules for region-based currencies
-        if (combo.region_id && !combo.is_store_currency) {
-          price.rules = {
-            region_id: combo.region_id,
+    let variants: any[]
+    
+    if (ticketType === "general_access") {
+      // For general access, create a single variant with total capacity
+      const totalCapacity = selectedVenue.rows.reduce((sum, row) => sum + row.seat_count, 0)
+      variants = [{
+        row_type: "general_access" as any,
+        seat_count: totalCapacity,
+        prices: (() => {
+          const allPrices = currencyRegionCombinations.map((combo) => {
+            const key = combo.region_id ? `${combo.currency}_${combo.region_id}` : `${combo.currency}_store`
+            const amount = prices["general_access"]?.[key] || 0
+            
+            const price: any = {
+              currency_code: combo.currency,
+              amount: amount,
+            }
+            
+            // Only add rules for region-based currencies
+            if (combo.region_id && !combo.is_store_currency) {
+              price.rules = {
+                region_id: combo.region_id,
+              }
+            }
+            
+            return price
+          })
+          
+          // For general access, ensure we have at least one price
+          const validPrices = allPrices.filter((price) => price.amount > 0)
+          if (validPrices.length === 0) {
+            throw new Error("At least one price must be set for general access tickets")
           }
+          return validPrices
+        })()
+      }].filter((v) => v.seat_count > 0 && v.prices.length > 0)
+    } else {
+      // For seat-based tickets, combine rows with the same row_type
+      const combinedRows: Record<RowType, { seat_count: number }> = {
+        premium: { seat_count: 0 },
+        balcony: { seat_count: 0 },
+        standard: { seat_count: 0 },
+        vip: { seat_count: 0 },
+      }
+      selectedVenue.rows.forEach((row) => {
+        if (!combinedRows[row.row_type]) {
+          combinedRows[row.row_type] = { seat_count: 0 }
         }
-        
-        return price
-      }).filter((price) => price.amount > 0), // Only include prices > 0
-    }))
-    .filter((v) => v.seat_count > 0 && v.prices.length > 0)
+        combinedRows[row.row_type].seat_count += row.seat_count
+      })
+      variants = Object.keys(combinedRows).map((rowType) => ({
+        row_type: rowType as RowType,
+        seat_count: combinedRows[rowType as RowType].seat_count,
+        prices: currencyRegionCombinations.map((combo) => {
+          const key = combo.region_id ? `${combo.currency}_${combo.region_id}` : `${combo.currency}_store`
+          const amount = prices[rowType as RowType]?.[key] || 0
+          
+          const price: any = {
+            currency_code: combo.currency,
+            amount: amount,
+          }
+          
+          // Only add rules for region-based currencies
+          if (combo.region_id && !combo.is_store_currency) {
+            price.rules = {
+              region_id: combo.region_id,
+            }
+          }
+          
+          return price
+        }).filter((price) => price.amount > 0), // Only include prices > 0
+      }))
+      .filter((v) => v.seat_count > 0 && v.prices.length > 0)
+    }
   
     setIsLoading(true)
     try {
@@ -170,6 +223,7 @@ const { data: venuesData } = useQuery<{
         venue_id: selectedVenueId,
         dates: selectedDates,
         ticket_type: ticketType,
+        max_quantity: ticketType === "general_access" && maxQuantity > 0 ? maxQuantity : undefined,
         variants,
       })
       toast.success("Show created successfully")
@@ -219,6 +273,9 @@ const steps = [
         currencyRegionCombinations={currencyRegionCombinations}
         prices={prices}
         setPrices={setPrices}
+        ticketType={ticketType}
+        maxQuantity={maxQuantity}
+        setMaxQuantity={setMaxQuantity}
       />
     ),
   },

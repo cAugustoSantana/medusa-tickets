@@ -14,6 +14,7 @@ export const TicketProduct = model.define("ticket_product", {
   venue: model.belongsTo(() => Venue),
   dates: model.array(),
   ticket_type: model.enum(TicketType).default(TicketType.SEAT_BASED),
+  max_quantity: model.number(), // For general access tickets
   variants: model.hasMany(() => TicketProductVariant, {
     mappedBy: "ticket_product",
   }),

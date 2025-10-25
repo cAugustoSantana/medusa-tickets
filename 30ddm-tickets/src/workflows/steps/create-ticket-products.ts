@@ -6,6 +6,8 @@ export type CreateTicketProductsStepInput = {
     product_id: string
     venue_id: string
     dates: string[]
+    ticket_type: string
+    max_quantity?: number
   }[]
 }
 

@@ -11,6 +11,7 @@ export const CreateTicketProductSchema = z.object({
   venue_id: z.string().min(1, "Venue ID is required"),
   dates: z.array(z.string()).min(1, "At least one date is required"),
   ticket_type: z.nativeEnum(TicketType).default(TicketType.SEAT_BASED),
+  max_quantity: z.number().min(1).optional(),
   variants: z.array(z.object({
     row_type: z.nativeEnum(RowType),
     seat_count: z.number().min(1, "Seat count must be at least 1"),
@@ -46,6 +47,19 @@ export async function GET(
       metadata,
     } = await query.graph({
       entity: "ticket_product",
+      fields: [
+        "id",
+        "product_id",
+        "venue_id",
+        "dates",
+        "ticket_type",
+        "max_quantity",
+        "venue.*",
+        "product.*",
+        "variants.*",
+        "created_at",
+        "updated_at",
+      ],
       ...req.queryConfig,
     })
   

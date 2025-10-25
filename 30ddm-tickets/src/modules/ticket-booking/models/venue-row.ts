@@ -5,7 +5,8 @@ export enum RowType {
   PREMIUM = "premium",
   BALCONY = "balcony",
   STANDARD = "standard",
-  VIP = "vip"
+  VIP = "vip",
+  GENERAL_ACCESS = "general_access"
 }
 
 export const VenueRow = model.define("venue_row", {

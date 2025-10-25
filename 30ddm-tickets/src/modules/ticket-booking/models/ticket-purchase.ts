@@ -8,7 +8,7 @@ export const TicketPurchase = model.define("ticket_purchase", {
   order_id: model.text(),
   ticket_product: model.belongsTo(() => TicketProduct),
   ticket_variant: model.belongsTo(() => TicketProductVariant),
-  venue_row: model.belongsTo(() => VenueRow),
+  venue_row: model.belongsTo(() => VenueRow, { optional: true }),
   seat_number: model.text(),
   show_date: model.dateTime(),
   status: model.enum(["pending", "scanned"]).default("pending"),

@@ -22,12 +22,16 @@ export const completeCartWithTicketsWorkflow = createWorkflow(
       entity: "cart",
       fields: [
         "id", 
+        "items.*",
         "items.variant.*",
         "items.variant.options.*",
         "items.variant.options.option.*",
         "items.variant.ticket_product_variant.*",
         "items.variant.ticket_product_variant.ticket_product.*",
         "items.metadata",
+        "total",
+        "subtotal",
+        "currency_code",
       ],
       filters: {
         id: input.cart_id,
@@ -35,6 +39,22 @@ export const completeCartWithTicketsWorkflow = createWorkflow(
       options: {
         throwIfKeyNotFound: true,
       },
+    })
+
+    // Debug cart data
+    console.log('Cart data before completion:', {
+      cart_id: carts[0]?.id,
+      total: carts[0]?.total,
+      subtotal: carts[0]?.subtotal,
+      currency_code: carts[0]?.currency_code,
+      items: Array.isArray(carts[0]?.items) ? carts[0]?.items?.map(item => ({
+        id: item.id,
+        title: item.title,
+        unit_price: item.unit_price,
+        total: item.total,
+        quantity: item.quantity,
+        variant_id: item.variant_id
+      })) : carts[0]?.items
     })
 
     // Step 2: Create ticket purchases for ticket products

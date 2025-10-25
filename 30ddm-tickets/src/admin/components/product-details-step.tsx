@@ -138,7 +138,7 @@ export const ProductDetailsStep = ({
         <Text className="txt-small text-ui-fg-subtle mt-1">
           {ticketType === "seat_based" 
             ? "Customers will select specific seats from the venue layout"
-            : "Customers will purchase general access tickets without seat selection"
+            : "Customers will purchase general access tickets without seat selection. You'll set the total capacity and price in the next step."
           }
         </Text>
       </div>

@@ -14,6 +14,7 @@ export type CreateTicketProductWorkflowInput = {
   venue_id: string
   dates: string[]
   ticket_type: TicketType
+  max_quantity?: number
   variants: Array<{
     row_type: RowType
     seat_count: number
@@ -76,9 +77,11 @@ export const createTicketProductWorkflow = createWorkflow(
         inventoryItems,
         stores,
       }, (data) => {
-        const rowTypes = [...new Set(
-          data.input.variants.map((variant: any) => variant.row_type)
-        )]
+        const rowTypes = data.input.ticket_type === TicketType.GENERAL_ACCESS 
+          ? ["general_access"]
+          : [...new Set(
+              data.input.variants.map((variant: any) => variant.row_type)
+            )]
         
         const product: CreateProductWorkflowInputDTO = {
           title: data.input.name,
@@ -107,20 +110,38 @@ export const createTicketProductWorkflow = createWorkflow(
         // Create variants for each date and row type combination
         let inventoryIndex = 0
         for (const date of data.input.dates) {
-          for (const variant of data.input.variants) {
+          if (data.input.ticket_type === TicketType.GENERAL_ACCESS) {
+            // For general access, create a single variant per date
             product.variants!.push({
-              title: `${data.input.name} - ${date} - ${variant.row_type}`,
+              title: `${data.input.name} - ${date} - General Access`,
               options: {
                 Date: date,
-                "Row Type": variant.row_type,
+                "Row Type": "general_access",
               },
               manage_inventory: true,
               inventory_items: [{
                 inventory_item_id: data.inventoryItems[inventoryIndex].id,
               }],
-              prices: variant.prices,
+              prices: data.input.variants[0].prices, // Use first variant's prices for general access
             })
             inventoryIndex++
+          } else {
+            // For seat-based tickets, create variants for each row type
+            for (const variant of data.input.variants) {
+              product.variants!.push({
+                title: `${data.input.name} - ${date} - ${variant.row_type}`,
+                options: {
+                  Date: date,
+                  "Row Type": variant.row_type,
+                },
+                manage_inventory: true,
+                inventory_items: [{
+                  inventory_item_id: data.inventoryItems[inventoryIndex].id,
+                }],
+                prices: variant.prices,
+              })
+              inventoryIndex++
+            }
           }
         }
       
@@ -143,6 +164,7 @@ export const createTicketProductWorkflow = createWorkflow(
             venue_id: data.input.venue_id,
             dates: data.input.dates,
             ticket_type: data.input.ticket_type,
+            max_quantity: data.input.max_quantity,
           })),
         }
       })

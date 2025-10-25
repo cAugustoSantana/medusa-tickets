@@ -45,6 +45,8 @@ export interface TicketProduct {
   product_id: string
   venue_id: string
   dates: string[]
+  ticket_type: string
+  max_quantity?: number
   venue: {
     id: string
     name: string
