@@ -32,7 +32,26 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
       throw new MedusaError(MedusaError.Types.NOT_FOUND, "Order not found")
     }
 
-    // Generate QR codes for each order item
+    // Fetch ticket purchases for this order
+    const { data: ticketPurchases } = await query.graph({
+      entity: "ticket_purchase",
+      fields: [
+        "id",
+        "order_id",
+        "seat_number",
+        "show_date",
+        "status",
+        "ticket_product.*",
+        "ticket_product.product.*",
+        "ticket_product.venue.*",
+        "venue_row.*",
+      ],
+      filters: {
+        order_id: id,
+      },
+    })
+
+    // Generate QR codes for each ticket purchase
     const qrCodes: Array<{
       itemId: string;
       qrCode: string;
@@ -40,21 +59,19 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
       itemInfo: any;
     }> = []
     
-    if (order.items && order.items.length > 0) {
-      for (const item of order.items) {
-        if (item?.id) {
-          // Create QR code data for order item
+    if (ticketPurchases && ticketPurchases.length > 0) {
+      for (const purchase of ticketPurchases) {
+        if (purchase?.id) {
+          // Create QR code data for ticket purchase
           const qrData = {
+            ticketId: purchase.id,
             orderId: order.id,
-            itemId: item.id,
-            productId: item.product?.id,
-            productTitle: item.product?.title,
-            variantTitle: item.variant?.title,
-            quantity: item.quantity,
-            unitPrice: item.unit_price,
-            total: item.total,
-            customerEmail: order.email,
-            orderDate: order.created_at,
+            seatNumber: purchase.seat_number,
+            showDate: purchase.show_date,
+            venue: purchase.ticket_product?.venue?.name,
+            productTitle: purchase.ticket_product?.product?.title,
+            rowType: purchase.venue_row?.row_type,
+            validationUrl: `${process.env.STORE_URL || 'http://localhost:8000'}/tickets/validate/${purchase.id}`,
           }
 
           // Generate QR code as data URL (base64)
@@ -68,15 +85,15 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
           })
 
           qrCodes.push({
-            itemId: item.id,
+            itemId: purchase.id,
             qrCode: qrCodeDataURL,
             qrData: qrData,
             itemInfo: {
-              productTitle: item.product?.title,
-              variantTitle: item.variant?.title,
-              quantity: item.quantity,
-              unitPrice: item.unit_price,
-              total: item.total,
+              productTitle: purchase.ticket_product?.product?.title,
+              variantTitle: purchase.venue_row?.row_type === "general_access" ? "General Access" : (purchase.venue_row?.row_type || "General"),
+              quantity: 1, // Each ticket purchase represents 1 ticket
+              unitPrice: 0, // We don't have pricing info in ticket purchases
+              total: 0, // We don't have pricing info in ticket purchases
             }
           })
         }
