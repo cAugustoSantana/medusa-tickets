@@ -13,11 +13,10 @@ const Review = ({ cart }: { cart: any }) => {
   const paidByGiftcard =
     cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0
 
-  const previousStepsCompleted =
-    cart.shipping_address &&
-    cart.shipping_methods.length > 0 &&
+    const previousStepsCompleted =
+    cart.billing_address &&
     (cart.payment_collection || paidByGiftcard)
-
+    
   return (
     <div className="bg-white">
       <div className="flex flex-row items-center justify-between mb-6">

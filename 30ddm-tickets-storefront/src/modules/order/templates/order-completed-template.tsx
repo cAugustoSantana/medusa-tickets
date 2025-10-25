@@ -1,6 +1,6 @@
 import { Heading } from "@medusajs/ui"
 import { cookies as nextCookies } from "next/headers"
-
+import BillingDetails from "@modules/order/components/billing-details"
 import CartTotals from "@modules/common/components/cart-totals"
 import Help from "@modules/order/components/help"
 import Items from "@modules/order/components/items"
@@ -44,7 +44,7 @@ export default async function OrderCompletedTemplate({
           </Heading>
           <Items order={order} />
           <CartTotals totals={order} />
-          <ShippingDetails order={order} />
+          <BillingDetails order={order} />
           <PaymentDetails order={order} />
           <Help />
         </div>

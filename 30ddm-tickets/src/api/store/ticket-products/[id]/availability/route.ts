@@ -29,6 +29,13 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     throw new MedusaError(MedusaError.Types.NOT_FOUND, "Ticket product not found")
   }
 
+  // Normalize date for comparison
+  const normalizeDate = (dateStr: string) => {
+    // Convert to YYYY-MM-DD format for comparison
+    const date = new Date(dateStr)
+    return date.toISOString().split('T')[0]
+  }
+
   // Calculate availability for each date and row type
   const availability = ticketProduct.dates.map((date: string) => {
     // Group rows by row_type to get total seats per row type
@@ -57,7 +64,10 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
             opt.option?.title === "Row Type"
           )?.value
           
-          return variantDate === date && variantRowType === group.row_type
+          // Use normalized date for comparison
+          const normalizedVariantDate = normalizeDate(variantDate)
+          const normalizedCurrentDate = normalizeDate(date)
+          return normalizedVariantDate === normalizedCurrentDate && variantRowType === group.row_type
         })
 
         if (!variant) {

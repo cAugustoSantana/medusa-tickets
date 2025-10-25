@@ -20,6 +20,8 @@ interface ProductDetailsStepProps {
   selectedDates: string[]
   setSelectedDates: (dates: string[]) => void
   venues: Venue[]
+  ticketType: "seat_based" | "general_access"
+  setTicketType: (ticketType: "seat_based" | "general_access") => void
 }
 
 export const ProductDetailsStep = ({
@@ -30,6 +32,8 @@ export const ProductDetailsStep = ({
   selectedDates,
   setSelectedDates,
   venues,
+  ticketType,
+  setTicketType,
 }: ProductDetailsStepProps) => {
   const selectedVenue = venues.find((v) => v.id === selectedVenueId)
   
@@ -111,6 +115,32 @@ export const ProductDetailsStep = ({
             ))}
           </Select.Content>
         </Select>
+      </div>
+
+      <div>
+        <Label htmlFor="ticket-type">Ticket Type</Label>
+        <Select
+          value={ticketType}
+          onValueChange={(value) => setTicketType(value as "seat_based" | "general_access")}
+        >
+          <Select.Trigger>
+            <Select.Value placeholder="Select ticket type" />
+          </Select.Trigger>
+          <Select.Content>
+            <Select.Item value="seat_based">
+              Seat-Based (Assigned Seats)
+            </Select.Item>
+            <Select.Item value="general_access">
+              General Access (No Seat Selection)
+            </Select.Item>
+          </Select.Content>
+        </Select>
+        <Text className="txt-small text-ui-fg-subtle mt-1">
+          {ticketType === "seat_based" 
+            ? "Customers will select specific seats from the venue layout"
+            : "Customers will purchase general access tickets without seat selection"
+          }
+        </Text>
       </div>
   
       {selectedVenue && (

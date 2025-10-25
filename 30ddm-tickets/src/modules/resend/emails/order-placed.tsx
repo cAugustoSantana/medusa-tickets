@@ -14,6 +14,7 @@ import {
     Link, 
   } from "@react-email/components"
   import { BigNumberValue, CustomerDTO, OrderDTO } from "@medusajs/framework/types"
+  import { getTicketValidationUrl } from "../../../lib/util/url"
   
   type OrderPlacedEmailProps = {
     order: OrderDTO & {
@@ -51,16 +52,32 @@ import {
       currency: order.currency_code,
     })
   
-    const formatPrice = (price: BigNumberValue) => {
+    const formatPrice = (price: BigNumberValue | number) => {
+      // Handle plain numbers
       if (typeof price === "number") {
         return formatter.format(price)
       }
   
+      // Handle strings
       if (typeof price === "string") {
         return formatter.format(parseFloat(price))
       }
   
-      return price?.toString() || ""
+      // Handle BigNumberValue objects
+      if (price?.value) {
+        return formatter.format(parseFloat(price.value))
+      }
+      
+      if (price?.amount) {
+        return formatter.format(parseFloat(price.amount))
+      }
+      
+      if (price?.calculated_amount) {
+        return formatter.format(parseFloat(price.calculated_amount))
+      }
+  
+      // Fallback for any other case
+      return price?.toString() || "0"
     }
   
     return (
@@ -148,11 +165,11 @@ import {
               {items && items.length > 0 && (
                 <Section className="mt-8">
                   <Heading className="text-xl font-semibold text-gray-800 mb-4">
-                    Your Order Items & QR Codes
+                    Your Tickets & QR Codes
                   </Heading>
                   <Text className="text-gray-600 mb-4">
-                    Your order is ready! Each QR code below contains your order item information. 
-                    You can use these QR codes for returns, exchanges, or order verification.
+                    Your tickets are ready! Each QR code below contains your ticket information and can be scanned for validation at the venue. 
+                    The QR codes include a validation URL that can be used to verify your tickets online.
                   </Text>
                   {items.map((item, index) => (
                     <Section key={item.itemId} className="border border-gray-200 rounded-lg p-4 mb-4">
@@ -173,10 +190,13 @@ import {
                               }}
                             />
                             <Text className="text-xs text-gray-500 mt-2">
-                              QR Code for order verification
+                              QR Code for ticket validation
                             </Text>
                             <Text className="text-xs text-gray-400 mt-1">
-                              Order: {order.id} | Item: {item.itemId}
+                              Scan to verify ticket online
+                            </Text>
+                            <Text className="text-xs text-gray-400 mt-1">
+                              Ticket ID: {item.itemId}
                             </Text>
                           </div>
                         </Column>
@@ -206,11 +226,34 @@ import {
                     </Section>
                   ))}
                   <Text className="text-sm text-gray-500 mt-4">
-                    Please save these QR codes or print them out. You can use them for returns, exchanges, or order verification.
+                    Please save these QR codes or print them out. Each QR code contains a validation URL that can be scanned to verify your ticket online at the venue.
                   </Text>
                   <Text className="text-sm text-gray-500">
                     Total items with QR codes: {String(totalItems || 0)}
                   </Text>
+                  
+                  {/* Validation URLs */}
+                  <Section className="mt-4 p-4 bg-gray-50 rounded-lg">
+                    <Heading className="text-lg font-semibold text-gray-800 mb-2">
+                      Ticket Validation URLs
+                    </Heading>
+                    <Text className="text-sm text-gray-600 mb-2">
+                      You can also validate your tickets by visiting these URLs directly:
+                    </Text>
+                    {items.map((item, index) => (
+                      <div key={item.itemId} className="mb-2">
+                        <Text className="text-xs text-gray-500">
+                          Ticket {index + 1} ({item.productTitle}):
+                        </Text>
+                        <Link 
+                          href={getTicketValidationUrl(item.itemId)}
+                          className="text-xs text-blue-600 underline break-all"
+                        >
+                          {getTicketValidationUrl(item.itemId)}
+                        </Link>
+                      </div>
+                    ))}
+                  </Section>
                 </Section>
               )}
   

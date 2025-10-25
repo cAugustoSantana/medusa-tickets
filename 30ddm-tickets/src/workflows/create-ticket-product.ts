@@ -6,12 +6,14 @@ import { CreateProductWorkflowInputDTO, CreateMoneyAmountDTO } from "@medusajs/f
 import { Modules } from "@medusajs/framework/utils"
 import { TICKET_BOOKING_MODULE } from "../modules/ticket-booking"
 import { RowType } from "../modules/ticket-booking/models/venue-row"
+import { TicketType } from "../modules/ticket-booking/models/ticket-product"
 import createTicketProductVariantsStep, { createTicketProductVariantsStep as namedCreateTicketProductVariantsStep } from "./steps/create-ticket-product-variants"
 
 export type CreateTicketProductWorkflowInput = {
   name: string
   venue_id: string
   dates: string[]
+  ticket_type: TicketType
   variants: Array<{
     row_type: RowType
     seat_count: number
@@ -40,13 +42,20 @@ export const createTicketProductWorkflow = createWorkflow(
         
         for (const date of data.input.dates) {
           for (const variant of data.input.variants) {
+            // For general access tickets, use total capacity instead of seat count
+            const quantity = data.input.ticket_type === TicketType.GENERAL_ACCESS 
+              ? variant.seat_count // Use seat_count as total capacity for general access
+              : variant.seat_count
+            
             inventoryItems.push({
               sku: `${data.input.name}-${date}-${variant.row_type}`,
               title: `${data.input.name} - ${date} - ${variant.row_type}`,
-              description: `Ticket for ${data.input.name} on ${date} in ${variant.row_type} seating`,
+              description: data.input.ticket_type === TicketType.GENERAL_ACCESS
+                ? `General access ticket for ${data.input.name} on ${date}`
+                : `Ticket for ${data.input.name} on ${date} in ${variant.row_type} seating`,
               location_levels: [{
                 location_id: data.stores[0].default_location_id,
-                stocked_quantity: variant.seat_count,
+                stocked_quantity: quantity,
               }],
               requires_shipping: false,
             })
@@ -133,6 +142,7 @@ export const createTicketProductWorkflow = createWorkflow(
             product_id: product.id,
             venue_id: data.input.venue_id,
             dates: data.input.dates,
+            ticket_type: data.input.ticket_type,
           })),
         }
       })

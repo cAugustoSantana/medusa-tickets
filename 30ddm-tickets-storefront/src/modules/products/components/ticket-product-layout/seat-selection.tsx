@@ -31,21 +31,41 @@ export default function SeatSelection({
   product,
   maxSeats,
 }: SeatSelectionProps) {
+  // Debug logging to check seat data
+  console.log('Seat data received:', seatData)
+  console.log('Seat map:', seatData.seat_map)
+  
   const getSeatStatus = (rowNumber: string, seatNumber: string) => {
     const seat = seatData.seat_map
       .find((row) => row.row_number === rowNumber)
       ?.seats.find((s) => s.number === seatNumber)
 
-    if (!seat) {return "unavailable"}
+    if (!seat) {
+      console.log(`Seat ${seatNumber} in row ${rowNumber} not found`)
+      return "unavailable"
+    }
 
-    if (seat.is_purchased) {return "purchased"}
+    console.log(`Seat ${seatNumber} in row ${rowNumber}:`, {
+      is_purchased: seat.is_purchased,
+      variant_id: seat.variant_id,
+      seat: seat
+    })
+
+    if (seat.is_purchased) {
+      console.log(`Seat ${seatNumber} in row ${rowNumber} is PURCHASED`)
+      return "purchased"
+    }
     
     const isSelected = selectedSeats.some((s) => 
       s.seatNumber === seatNumber && s.rowNumber === rowNumber && s.date === seatData.date
     )
     
-    if (isSelected) {return "selected"}
+    if (isSelected) {
+      console.log(`Seat ${seatNumber} in row ${rowNumber} is SELECTED`)
+      return "selected"
+    }
     
+    console.log(`Seat ${seatNumber} in row ${rowNumber} is AVAILABLE`)
     return "available"
   }
 

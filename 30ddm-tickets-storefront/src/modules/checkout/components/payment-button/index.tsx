@@ -18,11 +18,9 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   "data-testid": dataTestId,
 }) => {
   const notReady =
-    !cart ||
-    !cart.shipping_address ||
-    !cart.billing_address ||
-    !cart.email ||
-    (cart.shipping_methods?.length ?? 0) < 1
+  !cart ||
+  !cart.billing_address ||
+  !cart.email
 
   const paymentSession = cart.payment_collection?.payment_sessions?.[0]
 

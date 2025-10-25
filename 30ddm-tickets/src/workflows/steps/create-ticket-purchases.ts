@@ -29,31 +29,49 @@ export const createTicketPurchasesStep = createStep(
       order_id: string
       ticket_product_id: string
       ticket_variant_id: string
-      venue_row_id: string
+      venue_row_id: string | undefined
       seat_number: string
       show_date: Date
     }[] = []
 
     // Process each item in the cart
     for (const item of cart.items) {
-      if (
-        !item?.variant?.ticket_product_variant || 
-        !item?.metadata?.venue_row_id || 
-        !item?.metadata?.seat_number
-      ) {continue}
+      if (!item?.variant?.ticket_product_variant) { continue }
 
-      ticketPurchasesToCreate.push({
-        order_id,
-        ticket_product_id: item.variant.ticket_product_variant.ticket_product_id,
-        ticket_variant_id: item.variant.ticket_product_variant.id,
-        venue_row_id: item?.metadata.venue_row_id as string,
-        seat_number: item?.metadata.seat_number as string,
-        show_date: new Date(
-          item?.variant.options.find(
-            (option: any) => option.option.title === "Date"
-          )?.value as string
-        ),
-      })
+      // Check if this is a general access ticket
+      const isGeneralAccess = item?.metadata?.ticket_type === "general_access"
+
+      if (isGeneralAccess) {
+        // For general access tickets, we don't need seat selection
+        ticketPurchasesToCreate.push({
+          order_id,
+          ticket_product_id: item.variant.ticket_product_variant.ticket_product_id,
+          ticket_variant_id: item.variant.ticket_product_variant.id,
+          venue_row_id: undefined, // No specific row for general access
+          seat_number: "GA", // General Access
+          show_date: new Date(
+            item?.variant.options.find(
+              (option: any) => option.option.title === "Date"
+            )?.value as string
+          ),
+        })
+      } else {
+        // For seat-based tickets, require seat selection metadata
+        if (!item?.metadata?.venue_row_id || !item?.metadata?.seat_number) { continue }
+
+        ticketPurchasesToCreate.push({
+          order_id,
+          ticket_product_id: item.variant.ticket_product_variant.ticket_product_id,
+          ticket_variant_id: item.variant.ticket_product_variant.id,
+          venue_row_id: item?.metadata.venue_row_id as string,
+          seat_number: item?.metadata.seat_number as string,
+          show_date: new Date(
+            item?.variant.options.find(
+              (option: any) => option.option.title === "Date"
+            )?.value as string
+          ),
+        })
+      }
     }
 
     const ticketPurchases = await ticketBookingModuleService.createTicketPurchases(

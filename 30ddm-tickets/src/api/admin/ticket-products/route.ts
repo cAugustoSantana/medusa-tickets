@@ -3,12 +3,14 @@ import {
   createTicketProductWorkflow,
 } from "../../../workflows/create-ticket-product"
 import { RowType } from "../../../modules/ticket-booking/models/venue-row"
+import { TicketType } from "../../../modules/ticket-booking/models/ticket-product"
 import { z } from "zod"
 
 export const CreateTicketProductSchema = z.object({
   name: z.string().min(1, "Name is required"),
   venue_id: z.string().min(1, "Venue ID is required"),
   dates: z.array(z.string()).min(1, "At least one date is required"),
+  ticket_type: z.nativeEnum(TicketType).default(TicketType.SEAT_BASED),
   variants: z.array(z.object({
     row_type: z.nativeEnum(RowType),
     seat_count: z.number().min(1, "Seat count must be at least 1"),

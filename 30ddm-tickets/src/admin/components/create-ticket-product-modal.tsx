@@ -29,6 +29,7 @@ export const CreateTicketProductModal = ({
   const [name, setName] = useState("")
   const [selectedVenueId, setSelectedVenueId] = useState("")
   const [selectedDates, setSelectedDates] = useState<string[]>([])
+  const [ticketType, setTicketType] = useState<"seat_based" | "general_access">("seat_based")
 
   // Step 2 data - prices[rowType][currency_region] = amount
   const [prices, setPrices] = useState<Record<string, Record<string, number>>>({})
@@ -168,6 +169,7 @@ const { data: venuesData } = useQuery<{
         name,
         venue_id: selectedVenueId,
         dates: selectedDates,
+        ticket_type: ticketType,
         variants,
       })
       toast.success("Show created successfully")
@@ -202,6 +204,8 @@ const steps = [
         selectedDates={selectedDates}
         setSelectedDates={setSelectedDates}
         venues={venues}
+        ticketType={ticketType}
+        setTicketType={setTicketType}
       />
     ),
   },

@@ -1,7 +1,6 @@
 import { HttpTypes } from "@medusajs/types"
 import { Table, Text } from "@medusajs/ui"
 
-import LineItemOptions from "@modules/common/components/line-item-options"
 import LineItemPrice from "@modules/common/components/line-item-price"
 import LineItemUnitPrice from "@modules/common/components/line-item-unit-price"
 import Thumbnail from "@modules/products/components/thumbnail"
@@ -27,15 +26,21 @@ const Item = ({ item, currencyCode }: ItemProps) => {
         >
           {item.product_title}
         </Text>
-        <LineItemOptions variant={item.variant} data-testid="product-variant" />
+        {item.metadata?.seat_number !== undefined && (
+          <Text className="txt-medium text-ui-fg-subtle">
+            Seat {item.metadata?.row_number as string}{item.metadata?.seat_number as string}
+          </Text>
+        )}
+        {item.metadata?.show_date !== undefined && (
+          <Text className="txt-medium text-ui-fg-subtle">
+            Show Date: {new Date(item.metadata?.show_date as string).toLocaleDateString()}
+          </Text>
+        )}
       </Table.Cell>
 
       <Table.Cell className="!pr-0">
         <span className="!pr-0 flex flex-col items-end h-full justify-center">
           <span className="flex gap-x-1 ">
-            <Text className="text-ui-fg-muted">
-              <span data-testid="product-quantity">{item.quantity}</span>x{" "}
-            </Text>
             <LineItemUnitPrice
               item={item}
               style="tight"

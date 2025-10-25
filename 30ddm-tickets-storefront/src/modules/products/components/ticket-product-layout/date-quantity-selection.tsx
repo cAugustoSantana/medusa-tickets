@@ -52,6 +52,14 @@ export default function TicketDateSelection({
 
   const filteredAvailability = getFilteredAvailability(nbOfTickets)
 
+  // Auto-select date if there's only one available date
+  useEffect(() => {
+    if (filteredAvailability.length === 1 && !selectedDate) {
+      const singleDate = new Date(filteredAvailability[0].date)
+      setSelectedDate(singleDate)
+    }
+  }, [filteredAvailability, selectedDate])
+
   const dateAsStr = (date: Date) => {
     return `${
       date.getFullYear()
@@ -81,7 +89,9 @@ export default function TicketDateSelection({
 
   return (
     <div className="bg-ui-bg-base">
-      <h3 className="txt-large text-center mb-4">Select Show Date</h3>
+      <h3 className="txt-large text-center mb-4">
+        {filteredAvailability.length === 1 ? "Select Number of Tickets" : "Select Show Date"}
+      </h3>
       {isLoading && (
         <div className="flex flex-col gap-y-4">
           <div className="h-6 bg-ui-bg-subtle rounded animate-pulse w-32 mx-auto" />
@@ -114,25 +124,44 @@ export default function TicketDateSelection({
               </div>
             </div>
           </div>
+
+          {/* Show selected date if only one date available */}
+          {filteredAvailability.length === 1 && selectedDate && (
+            <div className="text-center">
+              <p className="txt-medium text-ui-fg-base">
+                Show Date: {selectedDate.toLocaleDateString('en-US', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </p>
+            </div>
+          )}
   
-          {/* Calendar */}
-          <div className="flex justify-center">
-            <Calendar
-              onChange={handleDateChange}
-              minValue={filteredAvailability.length > 0 ? 
-                new Date(filteredAvailability[0].date) : undefined
-              }
-              maxValue={filteredAvailability.length > 0 ? 
-                new Date(filteredAvailability[filteredAvailability.length - 1].date) : undefined
-              }
-              isDateUnavailable={isDateUnavailable}
-            />
-          </div>
+          {/* Calendar - only show if multiple dates available */}
+          {filteredAvailability.length > 1 && (
+            <div className="flex justify-center">
+              <Calendar
+                onChange={handleDateChange}
+                minValue={filteredAvailability.length > 0 ? 
+                  new Date(filteredAvailability[0].date) : undefined
+                }
+                maxValue={filteredAvailability.length > 0 ? 
+                  new Date(filteredAvailability[filteredAvailability.length - 1].date) : undefined
+                }
+                isDateUnavailable={isDateUnavailable}
+              />
+            </div>
+          )}
   
           {/* Available dates info */}
           {filteredAvailability.length > 0 && (
             <p className="txt-small text-ui-fg-subtle text-center txt-compact-small">
-              {filteredAvailability.length} show{filteredAvailability.length !== 1 ? "s" : ""} available for {nbOfTickets} ticket{nbOfTickets !== 1 ? "s" : ""}
+              {filteredAvailability.length === 1 
+                ? `1 show available for ${nbOfTickets} ticket${nbOfTickets !== 1 ? "s" : ""}`
+                : `${filteredAvailability.length} show${filteredAvailability.length !== 1 ? "s" : ""} available for ${nbOfTickets} ticket${nbOfTickets !== 1 ? "s" : ""}`
+              }
             </p>
           )}
   

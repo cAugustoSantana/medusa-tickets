@@ -3,6 +3,7 @@ import { TicketProductSeatsData } from "@lib/util/ticket-product"
 import { sdk } from "@lib/config"
 import { getAuthHeaders, getCacheOptions } from "./cookies"
 import { TicketProductAvailabilityData } from "@lib/util/ticket-product"
+import medusaError from "@lib/util/medusa-error"
 
 export const getTicketProductAvailability = async (
   productId: string
@@ -26,31 +27,33 @@ export const getTicketProductAvailability = async (
       }
     )
     .then((data) => data)
+    .catch((err) => medusaError(err))
 }
 export const getTicketProductSeats = async (
-    productId: string,
-    date: string
-  ): Promise<TicketProductSeatsData> => {
-    const headers = {
-      ...(await getAuthHeaders()),
-    }
-  
-    const next = {
-      ...(await getCacheOptions("ticket-products")),
-    }
-  
-    return sdk.client
-      .fetch<TicketProductSeatsData>(
-        `/store/ticket-products/${productId}/seats`,
-        {
-          method: "GET",
-          query: {
-            date,
-          },
-          headers,
-          next,
-          cache: "no-store", // Always fetch fresh data for seats
-        }
-      )
-      .then((data) => data)
+  productId: string,
+  date: string
+): Promise<TicketProductSeatsData> => {
+  const headers = {
+    ...(await getAuthHeaders()),
   }
+
+  const next = {
+    ...(await getCacheOptions("ticket-products")),
+  }
+
+  return sdk.client
+    .fetch<TicketProductSeatsData>(
+      `/store/ticket-products/${productId}/seats`,
+      {
+        method: "GET",
+        query: {
+          date,
+        },
+        headers,
+        next,
+        cache: "no-store", // Always fetch fresh data for seats
+      }
+    )
+    .then((data) => data)
+    .catch((err) => medusaError(err))
+}
