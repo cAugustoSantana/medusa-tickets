@@ -45,7 +45,15 @@ import {
   
   function OrderPlacedEmailComponent({ order, items, totalItems, customer, billing_address, email_banner }: OrderPlacedEmailProps) {
     const shouldDisplayBanner = email_banner && "title" in email_banner
-  
+
+    // Extract service fee from order items
+    const serviceFeeItem = order.items?.find(
+      (item) => item.metadata?.type === "service_fee"
+    )
+    const serviceFeeAmount = serviceFeeItem
+      ? (serviceFeeItem.unit_price || 0) * (serviceFeeItem.quantity || 0)
+      : 0
+
     const formatter = new Intl.NumberFormat([], {
       style: "currency",
       currencyDisplay: "narrowSymbol",
@@ -168,7 +176,7 @@ import {
                   <Text className="text-sm m-0 my-2 text-gray-500">Order ID: #{order.display_id}</Text>
                 </Column>
               </Row>
-              {order.items?.map((item) => (
+              {order.items?.filter((item) => item.metadata?.type !== "service_fee").map((item) => (
                 <Section key={item.id} className="border-b border-gray-200 py-4">
                   <Row>
                     <Column className="w-1/3">
@@ -277,6 +285,16 @@ import {
                     </Text>
                   </Column>
                 </Row>
+                {serviceFeeAmount > 0 && (
+                  <Row className="text-gray-600">
+                    <Column className="w-1/2">
+                      <Text className="m-0">Service Fee</Text>
+                    </Column>
+                    <Column className="w-1/2 text-right">
+                      <Text className="m-0">{formatPrice(serviceFeeAmount)}</Text>
+                    </Column>
+                  </Row>
+                )}
                 {order.shipping_methods?.map((method) => (
                   <Row className="text-gray-600" key={method.id}>
                     <Column className="w-1/2">
