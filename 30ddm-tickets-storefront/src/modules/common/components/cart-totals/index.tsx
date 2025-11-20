@@ -2,6 +2,7 @@
 
 import { convertToLocale } from "@lib/util/money"
 import React from "react"
+import { HttpTypes } from "@medusajs/types"
 
 type CartTotalsProps = {
   totals: {
@@ -12,6 +13,10 @@ type CartTotalsProps = {
     item_subtotal?: number | null
     shipping_subtotal?: number | null
     discount_subtotal?: number | null
+    items?: HttpTypes.StoreCartLineItem[] | null
+  } & {
+    // Cart object might be passed directly, so items could be at root level
+    items?: HttpTypes.StoreCartLineItem[] | null
   }
 }
 
@@ -23,7 +28,32 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
     item_subtotal,
     shipping_subtotal,
     discount_subtotal,
+    items,
   } = totals
+
+  // Extract service fee from cart items
+  // The cart object is passed as totals, so items might be at totals.items or directly on totals
+  const cartItems = items || (totals as any).items || []
+  const serviceFeeItem = Array.isArray(cartItems) 
+    ? cartItems.find(
+        (item: any) => item?.metadata?.type === "service_fee"
+      )
+    : null
+  const serviceFeeAmount = serviceFeeItem
+    ? (serviceFeeItem.unit_price || 0) * (serviceFeeItem.quantity || 0)
+    : 0
+
+  // Debug: Log to help troubleshoot (client-side only)
+  if (globalThis.window !== undefined && process.env.NODE_ENV === 'development') {
+    console.log('[CartTotals Debug]', {
+      hasItems: !!items,
+      itemsLength: items?.length,
+      cartItemsLength: cartItems?.length,
+      serviceFeeItem,
+      serviceFeeAmount,
+      totalsKeys: Object.keys(totals)
+    })
+  }
 
   return (
     <div>
@@ -34,6 +64,20 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
             {convertToLocale({ amount: item_subtotal ?? 0, currency_code })}
           </span>
         </div>
+        {serviceFeeAmount > 0 && (
+          <div className="flex items-center justify-between">
+            <span>Service Fee</span>
+            <span
+              data-testid="cart-service-fee"
+              data-value={serviceFeeAmount || 0}
+            >
+              {convertToLocale({
+                amount: serviceFeeAmount ?? 0,
+                currency_code,
+              })}
+            </span>
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <span>Shipping</span>
           <span data-testid="cart-shipping" data-value={shipping_subtotal || 0}>

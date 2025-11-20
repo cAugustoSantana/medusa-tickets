@@ -15,22 +15,38 @@ type ItemProps = {
 }
 
 const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
+  // Check if this is a service fee item (no product_handle)
+  const isServiceFee = item.metadata?.type === "service_fee" || !item.product_handle
+  
   return (
     <Table.Row className="w-full" data-testid="product-row">
       <Table.Cell className="!pl-0 p-4 w-24">
-        <LocalizedClientLink
-          href={`/products/${item.product_handle}`}
-          className={clx("flex", {
+        {isServiceFee ? (
+          <div className={clx("flex", {
             "w-16": type === "preview",
             "small:w-24 w-12": type === "full",
-          })}
-        >
-          <Thumbnail
-            thumbnail={item.thumbnail}
-            images={item.variant?.product?.images}
-            size="square"
-          />
-        </LocalizedClientLink>
+          })}>
+            <Thumbnail
+              thumbnail={item.thumbnail}
+              images={item.variant?.product?.images}
+              size="square"
+            />
+          </div>
+        ) : (
+          <LocalizedClientLink
+            href={`/products/${item.product_handle}`}
+            className={clx("flex", {
+              "w-16": type === "preview",
+              "small:w-24 w-12": type === "full",
+            })}
+          >
+            <Thumbnail
+              thumbnail={item.thumbnail}
+              images={item.variant?.product?.images}
+              size="square"
+            />
+          </LocalizedClientLink>
+        )}
       </Table.Cell>
 
       <Table.Cell className="text-left">
@@ -52,10 +68,17 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
         )}
       </Table.Cell>
 
-      {type === "full" && (
+      {type === "full" && !isServiceFee && (
         <Table.Cell>
           <div className="flex gap-2 items-center w-28">
             <DeleteButton id={item.id} data-testid="product-delete-button" />
+          </div>
+        </Table.Cell>
+      )}
+      {type === "full" && isServiceFee && (
+        <Table.Cell>
+          <div className="flex gap-2 items-center w-28">
+            {/* Service fee items cannot be deleted */}
           </div>
         </Table.Cell>
       )}
