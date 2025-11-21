@@ -3,6 +3,7 @@ import { CreateVenueSchema } from "./admin/venues/route"
 import { createFindParams } from "@medusajs/medusa/api/utils/validators"
 import { CreateTicketProductSchema } from "./admin/ticket-products/route"
 import { GetTicketProductSeatsSchema } from "./store/ticket-products/[id]/seats/route"
+import { CreateCustomerSchema } from "./customers/route"
 
 export default defineMiddlewares({
   routes: [
@@ -91,6 +92,11 @@ export default defineMiddlewares({
           ],
         }),
       ],
+    },
+    {
+      matcher: "/customers",
+      methods: ["POST"],
+      middlewares: [validateAndTransformBody(CreateCustomerSchema)],
     },
   ],
 })
