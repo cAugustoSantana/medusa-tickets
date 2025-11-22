@@ -54,7 +54,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     filters: {
       ticket_product_id: id,
     },
-    options: {
+    pagination: {
       take: limit,
       skip: offset,
       order: normalizedOrder,

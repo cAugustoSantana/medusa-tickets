@@ -40,7 +40,7 @@ export const sendOrderConfirmationWorkflow = createWorkflow(
     })
     
     const notification = sendNotificationStep([{
-      to: orders[0].email,
+      to: orders[0].email || "",
       channel: "email",
       template: "order-placed",
       data: {

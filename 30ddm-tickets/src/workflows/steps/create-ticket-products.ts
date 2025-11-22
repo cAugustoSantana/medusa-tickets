@@ -1,12 +1,13 @@
 import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
 import { TICKET_BOOKING_MODULE } from "../../modules/ticket-booking"
+import { TicketType } from "../../modules/ticket-booking/models/ticket-product"
 
 export type CreateTicketProductsStepInput = {
   ticket_products: {
     product_id: string
     venue_id: string
     dates: string[]
-    ticket_type: string
+    ticket_type: TicketType
     max_quantity?: number
   }[]
 }

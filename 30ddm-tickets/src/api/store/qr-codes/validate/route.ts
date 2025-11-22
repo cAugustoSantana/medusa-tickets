@@ -2,7 +2,7 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { MedusaError } from "@medusajs/framework/utils"
 
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
-  const { qrData } = req.body
+  const { qrData } = req.body as { qrData?: string | object }
 
   if (!qrData) {
     throw new MedusaError(
@@ -53,7 +53,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     }
 
     // Find the specific order item
-    const orderItem = order.items?.find(item => item.id === parsedData.itemId)
+    const orderItem = order.items?.find(item => item && item.id === parsedData.itemId)
 
     if (!orderItem) {
       throw new MedusaError(

@@ -57,7 +57,6 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
           email: ticketPurchase.order?.customer?.email || ticketPurchase.order?.email
         },
         orderId: ticketPurchase.order?.id,
-        orderDisplayId: ticketPurchase.order?.display_id,
       },
       message: `Valid ticket for ${ticketPurchase.venue_row?.venue?.name} - Row ${ticketPurchase.venue_row?.row_number}, Seat ${ticketPurchase.seat_number}`,
       scannedAt: new Date().toISOString()

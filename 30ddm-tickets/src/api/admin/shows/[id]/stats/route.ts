@@ -75,7 +75,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
   // Calculate total capacity
   let totalCapacity = 0
   if (ticketProduct.ticket_type === "general_access") {
-    totalCapacity = ticketProduct.max_quantity || ticketProduct.venue?.capacity || 0
+    totalCapacity = ticketProduct.max_quantity || 0
   } else {
     // For seat-based tickets, count all seats
     const { data: venueRows } = await query.graph({

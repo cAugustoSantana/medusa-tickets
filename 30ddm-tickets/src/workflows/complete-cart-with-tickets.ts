@@ -44,17 +44,14 @@ export const completeCartWithTicketsWorkflow = createWorkflow(
     // Debug cart data
     console.log('Cart data before completion:', {
       cart_id: carts[0]?.id,
-      total: carts[0]?.total,
-      subtotal: carts[0]?.subtotal,
       currency_code: carts[0]?.currency_code,
-      items: Array.isArray(carts[0]?.items) ? carts[0]?.items?.map(item => ({
+      items: Array.isArray(carts[0]?.items) ? carts[0]?.items?.map(item => item ? ({
         id: item.id,
         title: item.title,
         unit_price: item.unit_price,
-        total: item.total,
         quantity: item.quantity,
         variant_id: item.variant_id
-      })) : carts[0]?.items
+      }) : null) : carts[0]?.items
     })
 
     // Step 2: Create ticket purchases for ticket products
@@ -111,13 +108,12 @@ export const completeCartWithTicketsWorkflow = createWorkflow(
       total: refetchedOrder[0]?.total,
       subtotal: refetchedOrder[0]?.subtotal,
       currency_code: refetchedOrder[0]?.currency_code,
-      items: Array.isArray(refetchedOrder[0]?.items) ? refetchedOrder[0]?.items?.map(item => ({
+      items: Array.isArray(refetchedOrder[0]?.items) ? refetchedOrder[0]?.items?.map(item => item ? ({
         id: item.id,
         title: item.title,
         unit_price: item.unit_price,
-        total: item.total,
         quantity: item.quantity
-      })) : refetchedOrder[0]?.items
+      }) : null) : refetchedOrder[0]?.items
     })
 
     return new WorkflowResponse({

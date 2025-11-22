@@ -62,6 +62,7 @@ refreshCartItemsWorkflow.hooks.beforeRefreshingPaymentCollection(
     // Calculate total service fee (10% of all ticket items)
     let totalServiceFee = 0
     for (const item of ticketItems) {
+      if (!item) continue
       const itemTotal = (item.unit_price || 0) * (item.quantity || 0)
       const serviceFeeForItem = Math.round(itemTotal * SERVICE_FEE_PERCENTAGE)
       totalServiceFee += serviceFeeForItem

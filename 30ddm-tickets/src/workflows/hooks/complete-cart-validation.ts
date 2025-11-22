@@ -54,7 +54,7 @@ completeCartWorkflow.hooks.validate(
       if (!item.metadata?.show_date) {
         throw new MedusaError(
           MedusaError.Types.INVALID_DATA, 
-          `Show date is required for seat ${item.metadata?.seat_number} in product ${productVariant.product_id}`
+          `Show date is required for seat ${item.metadata?.seat_number} in product ${productVariant?.product_id || 'unknown'}`
         )
       }
 
@@ -73,6 +73,8 @@ completeCartWorkflow.hooks.validate(
       seatDateCombinations.add(seatDateKey)
 
       // Check if seat has already been purchased
+      if (!productVariant) continue
+      
       const existingPurchase = productVariant.ticket_product_variant?.purchases.find(
         (purchase) => purchase?.seat_number === item.metadata?.seat_number 
           && purchase?.show_date === item.metadata?.show_date
