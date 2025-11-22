@@ -1,4 +1,4 @@
-import { CreateCustomerSchema } from '../route'
+import { CreateCustomerSchema } from '../../../../src/api/customers/route'
 
 describe('CreateCustomerSchema', () => {
   describe('Valid inputs', () => {

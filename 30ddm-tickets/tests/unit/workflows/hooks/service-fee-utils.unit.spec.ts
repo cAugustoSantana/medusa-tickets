@@ -1,4 +1,4 @@
-import { SERVICE_FEE_PERCENTAGE } from "../../../config/service-fee"
+import { SERVICE_FEE_PERCENTAGE } from "../../../../src/config/service-fee"
 
 // Utility functions extracted from hook logic for testing
 export const calculateServiceFee = (ticketItems: any[]): number => {

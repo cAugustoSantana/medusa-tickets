@@ -1,4 +1,4 @@
-import { SERVICE_FEE_PERCENTAGE } from "../service-fee"
+import { SERVICE_FEE_PERCENTAGE } from "../../../src/config/service-fee"
 
 describe("Service Fee Configuration", () => {
   describe("SERVICE_FEE_PERCENTAGE", () => {

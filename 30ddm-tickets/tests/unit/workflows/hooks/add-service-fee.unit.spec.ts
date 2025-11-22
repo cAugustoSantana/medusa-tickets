@@ -1,5 +1,5 @@
 import { Modules } from "@medusajs/framework/utils"
-import { SERVICE_FEE_PERCENTAGE } from "../../../config/service-fee"
+import { SERVICE_FEE_PERCENTAGE } from "../../../../src/config/service-fee"
 
 // Test helper functions
 const createMockTicketItem = (
