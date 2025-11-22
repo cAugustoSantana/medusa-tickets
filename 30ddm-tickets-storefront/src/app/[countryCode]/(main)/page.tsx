@@ -3,7 +3,6 @@ import { Metadata } from "next"
 import FeaturedProducts from "@modules/home/components/featured-products"
 import Hero from "@modules/home/components/hero"
 import RecentEvents from "@modules/home/components/recent-events"
-import { SearchBar } from "@modules/common/components/search-bar"
 import { listCollections } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
 import { Button } from "@/components/ui/button"
@@ -35,13 +34,6 @@ export default async function Home(props: {
   return (
     <>
       <Hero />
-      
-      {/* Search Section */}
-      <section className="py-8 px-4 md:px-8 border-t border-border bg-white dark:bg-slate-950">
-        <div className="content-container">
-          <SearchBar />
-        </div>
-      </section>
 
       {/* Featured Events */}
       <section className="py-16 px-4 md:px-8 bg-white dark:bg-slate-950">
