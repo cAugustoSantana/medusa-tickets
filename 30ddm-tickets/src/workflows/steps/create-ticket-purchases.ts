@@ -84,17 +84,17 @@ export const createTicketPurchasesStep = createStep(
 
       if (isGeneralAccess) {
         // For general access tickets, get date from metadata or variant options
-        let showDate: string
+        let showDate: string = ""
         
         if (item?.metadata?.show_date) {
           // Get date from metadata (preferred for general access)
-          showDate = item.metadata.show_date
+          showDate = String(item.metadata.show_date)
         } else {
           // Fallback to variant options
           const variantDate = Array.isArray(item?.variant.options) 
-            ? item?.variant.options.find((option: any) => option.option.title === "Date")?.value
-            : item?.variant.options?.Date
-          showDate = variantDate
+            ? item?.variant.options.find((option: any) => option.option?.title === "Date")?.value
+            : (item?.variant.options as any)?.Date
+          showDate = variantDate || ""
         }
         
         if (!showDate) {
@@ -109,7 +109,8 @@ export const createTicketPurchasesStep = createStep(
         )
 
         // Create multiple ticket purchases for the quantity
-        for (let i = 0; i < item.quantity; i++) {
+        const itemQuantity = typeof item.quantity === 'number' ? item.quantity : Number(item.quantity) || 1
+        for (let i = 0; i < itemQuantity; i++) {
           ticketPurchasesToCreate.push({
             order_id,
             ticket_product_id: item.variant.ticket_product_variant.ticket_product_id,
@@ -125,8 +126,8 @@ export const createTicketPurchasesStep = createStep(
 
         // Get date from variant options (handle both array and object structures)
         const variantDate = Array.isArray(item?.variant.options) 
-          ? item?.variant.options.find((option: any) => option.option.title === "Date")?.value
-          : item?.variant.options?.Date
+          ? item?.variant.options.find((option: any) => option.option?.title === "Date")?.value
+          : (item?.variant.options as any)?.Date
         
         if (!variantDate) {
           console.error('No show date found for seat-based ticket:', item)

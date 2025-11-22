@@ -11,7 +11,10 @@ type ItemsProps = {
 }
 
 const Items = ({ order }: ItemsProps) => {
-  const items = order.items
+  // Filter out service fee items - they should only appear in totals, not as products
+  const items = order.items?.filter(
+    (item) => item.metadata?.type !== "service_fee"
+  )
 
   return (
     <div className="flex flex-col">

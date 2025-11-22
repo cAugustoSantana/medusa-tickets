@@ -51,7 +51,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       "order.billing_address.*",
     ],
     filters: {},
-    options: {
+    pagination: {
       take: limit,
       skip: offset,
       order: normalizedOrder,

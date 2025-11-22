@@ -18,13 +18,13 @@ export async function POST(
     console.log('Order total:', result.order?.total)
     console.log('Order subtotal:', result.order?.subtotal)
     console.log('Order currency:', result.order?.currency_code)
-    console.log('Order items:', result.order?.items?.map(item => ({
+    console.log('Order items:', result.order?.items?.map(item => item ? ({
       id: item.id,
       title: item.title,
       unit_price: item.unit_price,
       total: item.total,
       quantity: item.quantity
-    })))
+    }) : null))
 
     res.json({
       type: "order",

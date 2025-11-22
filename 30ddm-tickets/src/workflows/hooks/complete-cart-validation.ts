@@ -12,19 +12,25 @@ completeCartWorkflow.hooks.validate(
         id: cart.items.map((item) => item.id).filter(Boolean) as string[],
       },
     })
+
+    // Filter out service fee items from validation (they don't require shipping)
+    const ticketItems = items.filter(
+      (item: any) => item.metadata?.type !== "service_fee"
+    )
+
     // Get the product variant to check if it's a ticket product variant
     const { data: productVariants } = await query.graph({
       entity: "product_variant",
       fields: ["id", "product_id", "ticket_product_variant.purchases.*"],
       filters: {
-        id: items.map((item) => item.variant_id).filter(Boolean) as string[],
+        id: ticketItems.map((item) => item.variant_id).filter(Boolean) as string[],
       },
     })
 
     // Check for duplicate seats within the cart
     const seatDateCombinations = new Set<string>()
     
-    for (const item of items) {
+    for (const item of ticketItems) {
       const productVariant = productVariants.find(
         (variant) => variant.id === item.variant_id
       )
@@ -48,7 +54,7 @@ completeCartWorkflow.hooks.validate(
       if (!item.metadata?.show_date) {
         throw new MedusaError(
           MedusaError.Types.INVALID_DATA, 
-          `Show date is required for seat ${item.metadata?.seat_number} in product ${productVariant.product_id}`
+          `Show date is required for seat ${item.metadata?.seat_number} in product ${productVariant?.product_id || 'unknown'}`
         )
       }
 
@@ -67,6 +73,8 @@ completeCartWorkflow.hooks.validate(
       seatDateCombinations.add(seatDateKey)
 
       // Check if seat has already been purchased
+      if (!productVariant) continue
+      
       const existingPurchase = productVariant.ticket_product_variant?.purchases.find(
         (purchase) => purchase?.seat_number === item.metadata?.seat_number 
           && purchase?.show_date === item.metadata?.show_date

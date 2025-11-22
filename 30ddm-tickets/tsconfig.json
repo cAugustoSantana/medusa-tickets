@@ -20,7 +20,11 @@
     "strictNullChecks": true
   },
   "ts-node": {
-    "swc": true
+    "swc": true,
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "commonjs"
+    }
   },
   "include": [
     "**/*",
@@ -30,6 +34,12 @@
     "node_modules",
     ".medusa/server",
     ".medusa/admin",
-    ".cache"
+    ".cache",
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.js",
+    "**/*.spec.ts",
+    "**/*.spec.js",
+    "integration-tests/**"
   ]
 }

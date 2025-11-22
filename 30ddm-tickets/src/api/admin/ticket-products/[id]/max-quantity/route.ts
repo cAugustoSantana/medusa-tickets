@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { MedusaError } from "@medusajs/framework/utils"
 import { z } from "zod"
+import { TICKET_BOOKING_MODULE } from "../../../../../modules/ticket-booking"
 
 const UpdateMaxQuantitySchema = z.object({
   max_quantity: z.number().int().min(0).optional(),
@@ -9,7 +10,7 @@ const UpdateMaxQuantitySchema = z.object({
 export const PUT = async (req: MedusaRequest, res: MedusaResponse) => {
   const { id } = req.params
   const query = req.scope.resolve("query")
-  const ticketBookingModuleService = req.scope.resolve("ticketBookingModuleService")
+  const ticketBookingModuleService = req.scope.resolve(TICKET_BOOKING_MODULE)
 
   // Validate request body
   const { max_quantity } = UpdateMaxQuantitySchema.parse(req.body)
@@ -36,9 +37,10 @@ export const PUT = async (req: MedusaRequest, res: MedusaResponse) => {
   }
 
   // Update the ticket product
-  await ticketBookingModuleService.updateTicketProducts(id, {
+  await ticketBookingModuleService.updateTicketProducts([{
+    id: id,
     max_quantity: max_quantity,
-  })
+  }])
 
   return res.json({
     success: true,

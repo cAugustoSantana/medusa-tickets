@@ -17,6 +17,14 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
     })
   }
 
+  // Extract service fee from order items
+  const serviceFeeItem = order.items?.find(
+    (item) => item.metadata?.type === "service_fee"
+  )
+  const serviceFeeAmount = serviceFeeItem
+    ? (serviceFeeItem.unit_price || 0) * (serviceFeeItem.quantity || 0)
+    : 0
+
   return (
     <div>
       <h2 className="text-base-semi">Order Summary</h2>
@@ -26,6 +34,12 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
           <span>{getAmount(order.subtotal)}</span>
         </div>
         <div className="flex flex-col gap-y-1">
+          {serviceFeeAmount > 0 && (
+            <div className="flex items-center justify-between">
+              <span>Service Fee</span>
+              <span>{getAmount(serviceFeeAmount)}</span>
+            </div>
+          )}
           {order.discount_total > 0 && (
             <div className="flex items-center justify-between">
               <span>Discount</span>

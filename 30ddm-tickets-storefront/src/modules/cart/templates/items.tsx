@@ -10,7 +10,10 @@ type ItemsTemplateProps = {
 }
 
 const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
-  const items = cart?.items
+  // Filter out service fee items - they should only appear in totals, not as products
+  const items = cart?.items?.filter(
+    (item) => item.metadata?.type !== "service_fee"
+  )
   return (
     <div>
       <div className="pb-3 flex items-center">

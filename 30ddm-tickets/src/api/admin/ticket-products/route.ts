@@ -47,19 +47,6 @@ export async function GET(
       metadata,
     } = await query.graph({
       entity: "ticket_product",
-      fields: [
-        "id",
-        "product_id",
-        "venue_id",
-        "dates",
-        "ticket_type",
-        "max_quantity",
-        "venue.*",
-        "product.*",
-        "variants.*",
-        "created_at",
-        "updated_at",
-      ],
       ...req.queryConfig,
     })
   
