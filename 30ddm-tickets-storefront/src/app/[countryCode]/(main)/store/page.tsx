@@ -1,33 +1,44 @@
-import { Metadata } from "next"
+import { listProducts } from "@lib/data/products"
+import { getRegion } from "@lib/data/regions"
+import { HttpTypes } from "@medusajs/types"
+import EventCard from "@modules/products/components/event-card"
+import BrowseClient from "./browse-client"
 
-import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
-import StoreTemplate from "@modules/store/templates"
+export default async function BrowsePage(props: {
+  params: Promise<{ countryCode: string }>
+  searchParams: Promise<{ q?: string; location?: string }>
+}) {
+  const params = await props.params
+  const searchParams = await props.searchParams
 
-export const metadata: Metadata = {
-  title: "Store",
-  description: "Explore all of our products.",
-}
+  const { countryCode } = params
+  const region = await getRegion(countryCode)
 
-type Params = {
-  searchParams: Promise<{
-    sortBy?: SortOptions
-    page?: string
-  }>
-  params: Promise<{
-    countryCode: string
-  }>
-}
+  if (!region) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="content-container py-16 text-center">
+          <p className="text-muted-foreground">Region not found</p>
+        </div>
+      </div>
+    )
+  }
 
-export default async function StorePage(props: Params) {
-  const params = await props.params;
-  const searchParams = await props.searchParams;
-  const { sortBy, page } = searchParams
+  const { response } = await listProducts({
+    regionId: region.id,
+    queryParams: {
+      fields: "*variants.calculated_price",
+    },
+  })
+
+  const products = response.products || []
 
   return (
-    <StoreTemplate
-      sortBy={sortBy}
-      page={page}
-      countryCode={params.countryCode}
+    <BrowseClient
+      products={products}
+      region={region}
+      initialQuery={searchParams.q || ""}
+      initialLocation={searchParams.location || ""}
     />
   )
 }
